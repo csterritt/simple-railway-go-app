@@ -1,6 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,7 +29,19 @@ func main() {
 	router.GET("/", HelloWorldGet)
 
 	// Start serving the application
-	err = router.Run(":8080")
+	configuredPort := os.Getenv("PORT")
+	if configuredPort == "" {
+		configuredPort = "8080"
+	}
+	port, err := strconv.Atoi(configuredPort)
+	if err != nil {
+		panic(fmt.Sprintf("Unable to get port: %v\n", err))
+	}
+
+	log.Println("Starting on port", port)
+
+	// Start serving the application
+	err = router.Run(fmt.Sprintf(":%d", port))
 	if err != nil {
 		panic(err.Error())
 	}
