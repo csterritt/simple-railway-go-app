@@ -1,35 +1,31 @@
-// Sample program, a minimal web service
 package main
 
 import (
-        "fmt"
-        "log"
-        "net/http"
-        "os"
+	"github.com/gin-gonic/gin"
 )
 
-func main() {
-        log.Print("starting server...")
-        http.HandleFunc("/", handler)
+const output = "<html>" +
+	"<head><title>Hello, world!</title></head>" +
+	"<body><h3>Hello, World!</h3><p>An example go app.</p></body>" +
+	"</html>\n\n"
 
-        // Determine port for HTTP service.
-        port := os.Getenv("PORT")
-        if port == "" {
-                port = "8080"
-                log.Printf("defaulting to port %s", port)
-        }
-
-        // Start HTTP server.
-        log.Printf("listening on port %s", port)
-        if err := http.ListenAndServe(":"+port, nil); err != nil {
-                log.Fatal(err)
-        }
+func HelloWorldGet(c *gin.Context) {
+	c.Data(200, "text/html; charset=utf-8", []byte(output))
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-        name := os.Getenv("NAME")
-        if name == "" {
-                name = "World"
-        }
-        fmt.Fprintf(w, "Hello %s!\n", name)
+func main() {
+	router := gin.Default()
+	err := router.SetTrustedProxies(nil)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	// Add APIs and start server
+	router.GET("/", HelloWorldGet)
+
+	// Start serving the application
+	err = router.Run(":8080")
+	if err != nil {
+		panic(err.Error())
+	}
 }
