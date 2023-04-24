@@ -3,46 +3,26 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
-	"strconv"
-
-	"github.com/gin-gonic/gin"
 )
 
-const output = "<html>" +
-	"<head><title>Hello, world!</title></head>" +
-	"<body><h3>Hello, World!</h3><p>An example go app.</p></body>" +
-	"</html>\n\n"
+func main() {
+	var mux = http.NewServeMux()
 
-func HelloWorldGet(c *gin.Context) {
-	c.Data(200, "text/html; charset=utf-8", []byte(output))
+	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, "Hello, world!")
+	})
+
+	var port = envPortOr("8080")
+
+	fmt.Println("starting server on port " + port[1:])
+	log.Fatal(http.ListenAndServe(port, mux))
 }
 
-func main() {
-	router := gin.Default()
-	err := router.SetTrustedProxies(nil)
-	if err != nil {
-		panic(err.Error())
+func envPortOr(port string) string {
+	if envPort := os.Getenv("PORT"); envPort != "" {
+		return ":" + envPort
 	}
-
-	// Add APIs and start server
-	router.GET("/", HelloWorldGet)
-
-	// Start serving the application
-	configuredPort := os.Getenv("PORT")
-	if configuredPort == "" {
-		configuredPort = "8080"
-	}
-	port, err := strconv.Atoi(configuredPort)
-	if err != nil {
-		panic(fmt.Sprintf("Unable to get port: %v\n", err))
-	}
-
-	log.Println("Starting on port", port)
-
-	// Start serving the application
-	err = router.Run(fmt.Sprintf(":%d", port))
-	if err != nil {
-		panic(err.Error())
-	}
+	return ":" + port
 }
